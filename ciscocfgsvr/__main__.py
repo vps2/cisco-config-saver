@@ -65,6 +65,18 @@ def _open_file(name, mode='r', bufsize=-1, encoding=None, errors=None):
         message = "can't open '%(filename)s': %(error)s"
         raise _OpenFileError(message % args) from e
 
+def _connect_to_cisco(**device) -> BaseConnection:
+    conn = None
+
+    device['device_type'] = 'cisco_ios_telnet'
+
+    try:
+       conn = ConnectHandler(**device)
+    except ConnectionRefusedError:
+        device["device_type"] = 'cisco_ios'
+        conn = ConnectHandler(**device)
+
+    return conn
 
 def _exec_show_command(conn: BaseConnection, cmd: str) -> str:
     prompt = conn.find_prompt()
@@ -168,7 +180,6 @@ def main():
             visited_devices.append(device_ip)
 
             device = {
-                'device_type': 'cisco_ios_telnet',
                 'host': device_ip,
                 'username': login,
                 'password': password,
@@ -181,7 +192,7 @@ def main():
             print('Working with:', device_ip)
 
             try:
-                with ConnectHandler(**device) as conn:
+                with _connect_to_cisco(**device) as conn:
                     _make_backup(conn, backups_path)
                     if ip_filter:
                         neighbors = _get_neighbors(conn)
