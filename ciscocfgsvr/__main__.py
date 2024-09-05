@@ -93,7 +93,7 @@ def _exec_show_command(conn: BaseConnection, cmd: str) -> str:
             try:
                 page = conn.read_channel()
 
-                output += re.sub('\s?\b{9}\s{8}\b{9}', '', page)  # почему то в начале вывода появляются какие-то непечатаемые символы
+                output += re.sub(r'\s?\b{9}\s{8}\b{9}', '', page)  # почему то в начале вывода появляются какие-то непечатаемые символы
 
                 if more_string in page:
                     output = output[:-(len(more_string) + 2)]  # убираем --More-- из остальных выводов
